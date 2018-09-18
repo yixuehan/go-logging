@@ -89,7 +89,7 @@ func (l *Writer) reopen() error {
 
 func (l *Writer) open() error {
 	var err error
-	logName := l.path + "/" + string(l.day) + ".log"
+	logName := l.path + "/" + fmt.Sprintf("%d", l.day) + ".log"
 	fmt.Println("logName:", logName)
 	l.file, err = os.OpenFile(logName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, l.mode)
 	if err != nil {
