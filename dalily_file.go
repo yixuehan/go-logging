@@ -32,7 +32,7 @@ func Open(path string, mode os.FileMode) (*Writer, error) {
 	var w Writer
 	w.path = path
 	w.mode = mode
-	w.time_format = "200601021504"
+	w.time_format = "2006010215"
 	w.day = time.Now().Format(w.time_format)
 	err := w.open()
 	return &w, err
@@ -92,7 +92,7 @@ func (l *Writer) reopen() error {
 func (l *Writer) open() error {
 	var err error
 	logName := fmt.Sprintf("%s/%s.log", l.path, l.day)
-	fmt.Println("logName:", logName)
+	//fmt.Println("logName:", logName)
 	l.file, err = os.OpenFile(logName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, l.mode)
 	if err != nil {
 		return err
