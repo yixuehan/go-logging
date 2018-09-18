@@ -14,7 +14,7 @@ import (
 // A file rotation aware writer
 type Writer struct {
 	path  string
-	day   int
+	day   string
 	mode  os.FileMode
 	file  *os.File
 	inode uint64
@@ -31,8 +31,7 @@ func Open(path string, mode os.FileMode) (*Writer, error) {
 	var w Writer
 	w.path = path
 	w.mode = mode
-	t := time.Now().UTC()
-	w.day = t.YearDay()
+	w.day = time.Now().Format("20060102")
 	err := w.open()
 	return &w, err
 }
@@ -57,11 +56,11 @@ func (l *Writer) Write(p []byte) (int, error) {
 }
 
 func (l *Writer) reopenIfNeed() error {
-	t := time.Now().UTC()
-	if t.YearDay() == l.day {
+	t := time.Now().Format("20060102")
+	if t == l.day {
 		return nil
 	} else {
-		l.day = t.YearDay()
+		l.day = t
 		return l.reopen()
 	}
 }
@@ -89,7 +88,7 @@ func (l *Writer) reopen() error {
 
 func (l *Writer) open() error {
 	var err error
-	logName := l.path + "/" + fmt.Sprintf("%d", l.day) + ".log"
+	logName := fmt.Sprintf("%s/%s.log", l.path, l.day)
 	fmt.Println("logName:", logName)
 	l.file, err = os.OpenFile(logName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, l.mode)
 	if err != nil {
