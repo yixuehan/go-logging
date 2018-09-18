@@ -13,12 +13,13 @@ import (
 
 // A file rotation aware writer
 type Writer struct {
-	path  string
-	day   int
-	mode  os.FileMode
-	file  *os.File
-	inode uint64
-	mutex sync.Mutex
+	path        string
+	day         string
+	time_format string
+	mode        os.FileMode
+	file        *os.File
+	inode       uint64
+	mutex       sync.Mutex
 }
 
 /*
@@ -31,6 +32,8 @@ func Open(path string, mode os.FileMode) (*Writer, error) {
 	var w Writer
 	w.path = path
 	w.mode = mode
+	w.time_format = "200601021504"
+	w.day = time.Now().Format(w.time_format)
 	err := w.open()
 	return &w, err
 }
@@ -44,6 +47,7 @@ a new file will be created with the mode specified at Open time.
 func (l *Writer) Write(p []byte) (int, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
+	l.reopenIfNeed()
 	inode, err := l.checkInode()
 	if os.IsNotExist(err) || inode != l.inode {
 		err = l.reopen()
@@ -55,11 +59,11 @@ func (l *Writer) Write(p []byte) (int, error) {
 }
 
 func (l *Writer) reopenIfNeed() error {
-	t := time.Now().UTC()
-	if t.YearDay() == l.day {
+	t := time.Now().Format(l.time_format)
+	if t == l.day {
 		return nil
 	} else {
-		l.day = t.YearDay()
+		l.day = t
 		return l.reopen()
 	}
 }
@@ -87,7 +91,7 @@ func (l *Writer) reopen() error {
 
 func (l *Writer) open() error {
 	var err error
-	logName := l.path + "/" + string(l.day) + ".log"
+	logName := fmt.Sprintf("%s/%s.log", l.path, l.day)
 	fmt.Println("logName:", logName)
 	l.file, err = os.OpenFile(logName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, l.mode)
 	if err != nil {
