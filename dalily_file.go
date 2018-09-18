@@ -31,6 +31,8 @@ func Open(path string, mode os.FileMode) (*Writer, error) {
 	var w Writer
 	w.path = path
 	w.mode = mode
+	t := time.Now().UTC()
+	w.day = t.YearDay()
 	err := w.open()
 	return &w, err
 }
